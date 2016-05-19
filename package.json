@@ -1,0 +1,29 @@
+{
+  "name": "maudite",
+  "version": "1.0.0",
+  "description": "streaming templates using template literals",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/bengl/maudite.git"
+  },
+  "keywords": [
+    "stream",
+    "template",
+    "literal",
+    "buffer"
+  ],
+  "author": "Bryan English <bryan@bryanenglish.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bengl/maudite/issues"
+  },
+  "homepage": "https://github.com/bengl/maudite#readme",
+  "devDependencies": {
+    "pitesti": "^2.1.0",
+    "standard": "^7.1.0"
+  }
+}
