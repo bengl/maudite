@@ -4,6 +4,7 @@ Code licensed under the MIT License.
 See LICENSE.txt
 */
 const Readable = require('stream').Readable
+const access = require('deep-access')
 const stringCache = {}
 
 function getBuff (str) {
@@ -41,11 +42,11 @@ class State {
       if (i < len - 1) {
         var val = this.template.values[i]
         if (val.each) { // as returned by `m.each`
-          this.currentEach = val;
+          this.currentEach = val
           return this.handleEach(val)
         }
         if (typeof val === 'string') {
-          this.stream.push(this.context[val])
+          this.stream.push(access(this.context, val))
         } else {
           // otherwise it's a function, returning a template or buffer/string
           const templOrBuf = val(this.context)
@@ -69,7 +70,7 @@ class State {
 
   handleEach () {
     const val = this.currentEach
-    const iterableContext = this.context[val.contextItem]
+    const iterableContext = access(this.context, val.contextItem)
     const eachContext = iterableContext[this.eachIndex++]
     if (this.eachIndex === iterableContext.length) {
       this.currentEach = null

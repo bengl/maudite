@@ -21,8 +21,8 @@ Your inlined functions can return a buffer or a string or another template, and
 these will be sent to the stream. This means you can do any kind of conditional
 logic you want to determine what to render.
 
-As a shortcut, you can simply put a property name (as a string)_ for the contex
-object, rather than a function accessing it.
+As a shortcut, you can simply put a property name (as a string that's parsed
+with [`deep-access`](https://www.npmjs.com/package/deep-access)) for the context object, rather than a function accessing it.
 
 ```js
 const m = require('maudite')
@@ -47,6 +47,10 @@ template({
 
 // Hello, Thing 1 Thing 2!
 ```
+
+The first argument to `m.each` is a context accessor string, via [`deep-access`](https://www.npmjs.com/package/deep-access),
+giving the property that is an array to iterate over. The next argument is a
+template to apply to each element of the array.
 
 ## License
 

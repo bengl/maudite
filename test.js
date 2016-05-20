@@ -29,6 +29,13 @@ test(
 )
 
 test(
+  'one var as deep property name',
+  m`foo ${'bar.bux'} baz`,
+  {bar: {bux: 'bbaarr'}},
+  'foo bbaarr baz'
+)
+
+test(
   'two vars',
   m`foo ${c => c.bar} baz ${c => c.bux} buf`,
   {bar: 'bbaarr', bux: 'BUX'},
@@ -74,6 +81,13 @@ test(
   'each',
   m`buy ${m.each('numbers', m`${c => c} chickens `)}today!`,
   {numbers: ['two', 'four', 'six']},
+  'buy two chickens four chickens six chickens today!'
+)
+
+test(
+  'deep each',
+  m`buy ${m.each('foo.numbers', m`${c => c} chickens `)}today!`,
+  {foo: {numbers: ['two', 'four', 'six']}},
   'buy two chickens four chickens six chickens today!'
 )
 

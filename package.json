@@ -25,5 +25,8 @@
   "devDependencies": {
     "pitesti": "^2.1.0",
     "standard": "^7.1.0"
+  },
+  "dependencies": {
+    "deep-access": "^0.1.1"
   }
 }
