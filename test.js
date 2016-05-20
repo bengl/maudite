@@ -91,4 +91,11 @@ test(
   'buy two chickens four chickens six chickens today!'
 )
 
+test(
+  'multi each',
+  m`buy ${m.each('numbers', m`${c => c} chickens `)}and ${m.each('numbers', m`${c => c} cows `)}today!`,
+  {numbers: ['two', 'four', 'six']},
+  'buy two chickens four chickens six chickens and two cows four cows six cows today!'
+)
+
 testSuite()

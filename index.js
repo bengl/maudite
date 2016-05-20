@@ -32,10 +32,10 @@ class State {
   }
 
   iterate (plusOne) {
+    const i = this.index = plusOne ? this.index + 1 : this.index
     if (this.currentEach) {
       return this.handleEach()
     }
-    const i = plusOne ? this.index + 1 : this.index
     const len = this.len
     if (i < len) {
       this.stream.push(this.template.strings[i])
@@ -59,7 +59,7 @@ class State {
       }
     } else {
       if (this.parent) {
-        return this.parent.iterate(true)
+        return this.parent.iterate(!this.parent.currentEach)
       } else {
         this.stream.push(null)
       }
@@ -82,7 +82,7 @@ class State {
 }
 
 function m (strings, ...values) {
-  strings = strings.map(getBuff)
+  //strings = strings.map(getBuff)
   function compiledTemplate (context) {
     const stream = Readable({
       // instead of going through all that bidniz of handling a "tree of
