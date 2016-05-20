@@ -22,6 +22,13 @@ test(
 )
 
 test(
+  'one var as property name',
+  m`foo ${'bar'} baz`,
+  {bar: 'bbaarr'},
+  'foo bbaarr baz'
+)
+
+test(
   'two vars',
   m`foo ${c => c.bar} baz ${c => c.bux} buf`,
   {bar: 'bbaarr', bux: 'BUX'},

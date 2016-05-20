@@ -39,15 +39,21 @@ class State {
     if (i < len) {
       this.stream.push(this.template.strings[i])
       if (i < len - 1) {
-        const val = this.template.values[i]
+        var val = this.template.values[i]
         if (val.each) { // as returned by `m.each`
+          this.currentEach = val;
           return this.handleEach(val)
         }
-        const templOrBuf = val(this.context)
-        if (!templOrBuf.isTemplate) {
-          this.stream.push(templOrBuf)
+        if (typeof val === 'string') {
+          this.stream.push(this.context[val])
         } else {
-          return new State(templOrBuf, this)
+          // otherwise it's a function, returning a template or buffer/string
+          const templOrBuf = val(this.context)
+          if (!templOrBuf.isTemplate) {
+            this.stream.push(templOrBuf)
+          } else {
+            return new State(templOrBuf, this)
+          }
         }
       }
     } else {
@@ -61,9 +67,8 @@ class State {
     return this
   }
 
-  handleEach (val) {
-    if (val) { this.currentEach = val }
-    val = this.currentEach
+  handleEach () {
+    const val = this.currentEach
     const iterableContext = this.context[val.contextItem]
     const eachContext = iterableContext[this.eachIndex++]
     if (this.eachIndex === iterableContext.length) {

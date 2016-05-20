@@ -21,6 +21,17 @@ Your inlined functions can return a buffer or a string or another template, and
 these will be sent to the stream. This means you can do any kind of conditional
 logic you want to determine what to render.
 
+As a shortcut, you can simply put a property name (as a string)_ for the contex
+object, rather than a function accessing it.
+
+```js
+const m = require('maudite')
+const template = m`Hello, ${'name'}!\n`;
+template({name: 'World'}).pipe(process.stdout);
+
+// Hello, World!
+```
+
 You can also use the special `m.each` function to iterate over arrays in your
 context object.
 
