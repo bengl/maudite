@@ -1,7 +1,10 @@
 # maudite
 
 **maudite** *(moe-DEET)* is a templating system using template literals. It returns
-a stream of buffers for sending the resulting data quickly to its destination.
+a stream of buffers, or a string, for sending the resulting data to its
+destination.
+
+`maudite` is [pretty quick](benchmarks/README.md)
 
 ## Usage
 
@@ -51,6 +54,16 @@ template({
 The first argument to `m.each` is a context accessor string, via [`deep-access`](https://www.npmjs.com/package/deep-access),
 giving the property that is an array to iterate over. The next argument is a
 template to apply to each element of the array.
+
+To return a compiled and ready-to-go string, rather than a stream, just call the
+`asString` function on the template, passing in the context object.
+
+```js
+const m = require('maudite')
+const template = m`Hello, ${'name'}!\n`;
+console.log(template.asString({name: 'World'}));
+
+// Hello, World!
 
 ## License
 
