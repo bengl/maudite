@@ -39,14 +39,10 @@ function stringify (template, context) {
 }
 
 function stringifyVal (val, context) {
-  if (val.isEach) return stringifyEach(val, context)
-  else if (typeof val === 'string') return access(context, val)
-  else {
-    // val is a function returning template or buffer/string
-    const templOrBuf = val(context)
-    if (!templOrBuf.isTemplate) return templOrBuf
-    else return stringify(templOrBuf, context)
-  }
+  // val is a function returning template or buffer/string
+  const templOrBuf = val(context)
+  if (!templOrBuf.isTemplate) return templOrBuf
+  else return stringify(templOrBuf, context)
 }
 
 function stringifyEach (val, context) {
@@ -59,12 +55,20 @@ function stringifyEach (val, context) {
   return result
 }
 
+function compileVals (values) {
+  return values.map(val => {
+    if (typeof val === 'string') return context => access(context, val)
+    if (val.isEach) return context => stringifyEach(val, context)
+    return val
+  })
+}
+
 class Template extends Function { // don't extend Function in 2.0.0
   constructor (strings, values) {
     // this is probably super-inefficient. deprecate in 2.0.0
     super('context', 'return arguments.callee.asStream(context)')
     this.strings = strings
-    this.values = values
+    this.values = compileVals(values)
     this.isTemplate = true
   }
 
