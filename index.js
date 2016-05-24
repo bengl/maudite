@@ -41,8 +41,8 @@ function stringify (template, context) {
 function stringifyVal (val, context) {
   // val is a function returning template or buffer/string
   const templOrBuf = val(context)
-  if (!templOrBuf.isTemplate) return templOrBuf
-  else return stringify(templOrBuf, context)
+  if (templOrBuf.isTemplate) return stringify(templOrBuf, context)
+  else return templOrBuf
 }
 
 function stringifyEach (val, context) {
