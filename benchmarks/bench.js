@@ -27,7 +27,7 @@ const run = fastbench([
 if (process.argv[2] === 'server') {
   const port = process.env.NODE_PORT || process.env.PORT || 3000
   require('http').createServer((req, res) => {
-    switch(req.url) {
+    switch (req.url) {
       case '/handlebars':
         res.end(handlebarsTemplate(context))
         break
