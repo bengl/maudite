@@ -4,108 +4,92 @@ Code licensed under the MIT License.
 See LICENSE.txt
 */
 const Readable = require('stream').Readable
-const access = require('deep-access')
-const stringCache = {}
 
-function getBuff (str) {
-  if (stringCache[str]) {
-    return stringCache[str]
-  } else {
-    const buff = new Buffer(str)
-    stringCache[str] = buff
-    return buff
+// Roughly the same as https://www.npmjs.com/package/deep-access, except with a
+// faster loop
+function access (obj, prop) {
+  const chunks = prop.split('.')
+  const len = chunks.length
+  let i = 0
+  while (i < len) {
+    let chunk = chunks[i]
+    let checkExistence = chunk.endsWith('?')
+    if (checkExistence) chunk = chunk.slice(0, -1)
+    obj = obj[chunk]
+    if (!obj && checkExistence) return obj
+    i++
+  }
+  return obj
+}
+
+function stringify (template, context) {
+  const strings = template.strings
+  const len = strings.length
+  const values = template.values
+  let i = 0
+  let result = ''
+  while (i < len) {
+    const str = strings[i]
+    result = result + str
+    const val = values[i]
+    if (val) result = result + stringifyVal(val, context)
+    i++
+  }
+  return result
+}
+
+function stringifyVal (val, context) {
+  if (val.isEach) return stringifyEach(val, context)
+  else if (typeof val === 'string') return access(context, val)
+  else {
+    // val is a function returning template or buffer/string
+    const templOrBuf = val(context)
+    if (!templOrBuf.isTemplate) return templOrBuf
+    else return stringify(templOrBuf, context)
   }
 }
 
-class State {
-  constructor (templ, par, context = par.context, stream = par.stream) {
-    this.template = templ
-    this.context = context
-    this.stream = stream
-    this.parent = par
-    this.index = 0
-    this.len = templ.strings.length
-
-    // these are for handling `m.each`
-    this.eachIndex = 0
-    this.currentEach = null
-  }
-
-  iterate (plusOne) {
-    const i = this.index = plusOne ? this.index + 1 : this.index
-    if (this.currentEach) {
-      return this.handleEach()
-    }
-    const len = this.len
-    if (i < len) {
-      this.stream.push(this.template.strings[i])
-      if (i < len - 1) {
-        var val = this.template.values[i]
-        if (val.each) { // as returned by `m.each`
-          this.currentEach = val
-          return this.handleEach(val)
-        }
-        if (typeof val === 'string') {
-          this.stream.push(access(this.context, val))
-        } else {
-          // otherwise it's a function, returning a template or buffer/string
-          const templOrBuf = val(this.context)
-          if (!templOrBuf.isTemplate) {
-            this.stream.push(templOrBuf)
-          } else {
-            return new State(templOrBuf, this)
-          }
-        }
-      }
-    } else {
-      if (this.parent) {
-        return this.parent.iterate(!this.parent.currentEach)
-      } else {
-        this.stream.push(null)
-      }
-    }
-    this.index = i + 1
-    return this
-  }
-
-  handleEach () {
-    const val = this.currentEach
-    const iterableContext = access(this.context, val.contextItem)
-    const eachContext = iterableContext[this.eachIndex++]
-    if (this.eachIndex === iterableContext.length) {
-      this.currentEach = null
-      this.eachIndex = 0
-    }
-    // need to iterate here or else no pushes happen in this iteration
-    return new State(val.template, this, eachContext).iterate()
-  }
+function stringifyEach (val, context) {
+  let result = ''
+  const iterableContext = access(context, val.contextItem)
+  const template = val.template
+  const len = iterableContext.length
+  let i = 0
+  while (i < len) result = result + stringify(template, iterableContext[i++])
+  return result
 }
 
-function m (strings, ...values) {
-  //strings = strings.map(getBuff)
-  function compiledTemplate (context) {
-    const stream = Readable({
-      // instead of going through all that bidniz of handling a "tree of
-      // loops" here, it's handled by instances of the state class, which
-      // handle where we are in the iteration.
-      read () { state = state.iterate() }
+class Template extends Function { // don't extend Function in 2.0.0
+  constructor (strings, values) {
+    // this is probably super-inefficient. deprecate in 2.0.0
+    super('context', 'return arguments.callee.asStream(context)')
+    this.strings = strings
+    this.values = values
+    this.isTemplate = true
+  }
+
+  asString (context) {
+    return stringify(this, context)
+  }
+
+  asStream (context) {
+    const self = this
+    return Readable({
+      read () {
+        this.push(self.asString(context))
+        this.push(null)
+      }
     })
-    var state = new State(compiledTemplate, null, context, stream)
-    return stream
-  }
-  compiledTemplate.strings = strings
-  compiledTemplate.values = values
-  compiledTemplate.isTemplate = true
-  return compiledTemplate
-}
-
-function each (contextItem, template) {
-  return {
-    template: template,
-    contextItem: contextItem,
-    each: true
   }
 }
 
-m.each = each
-module.exports = m
+class Each {
+  constructor (contextItem, template) {
+    this.template = template
+    this.contextItem = contextItem
+    this.isEach = true
+  }
+}
+
+module.exports = (strings, ...values) => new Template(strings, values)
+module.exports.each = (contextItem, template) => new Each(contextItem, template)

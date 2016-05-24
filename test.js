@@ -98,4 +98,14 @@ test(
   'buy two chickens four chickens six chickens and two cows four cows six cows today!'
 )
 
+testSuite`string rather than stream`(_ => {
+  const templ = m`buy ${m.each('numbers', m`${c => c} chickens `)}and ${m.each('numbers', m`${c => c} cows `)}today!`
+  const context = {numbers: ['two', 'four', 'six']}
+  const result = templ.asString(context)
+  assert.equal(
+    result,
+    'buy two chickens four chickens six chickens and two cows four cows six cows today!'
+  )
+})
+
 testSuite()
