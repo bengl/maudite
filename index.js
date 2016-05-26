@@ -6,18 +6,18 @@ See LICENSE.txt
 const Readable = require('stream').Readable
 
 // Roughly the same as https://www.npmjs.com/package/deep-access, except with a
-// faster loop
-function access (obj, prop) {
-  const chunks = prop.split('.')
+// faster loop and a shortcut for top level properties
+function access (obj, pty) {
+  if (pty.indexOf('.') === -1 && pty[pty.length - 1] !== '?') return obj[pty]
+  const chunks = pty.split('.')
   const len = chunks.length
   let i = 0
   while (i < len) {
-    let chunk = chunks[i]
+    let chunk = chunks[i++]
     let checkExistence = chunk.endsWith('?')
     if (checkExistence) chunk = chunk.slice(0, -1)
     obj = obj[chunk]
     if (!obj && checkExistence) return obj
-    i++
   }
   return obj
 }
@@ -29,20 +29,18 @@ function stringify (template, context) {
   let i = 0
   let result = ''
   while (i < len) {
-    const str = strings[i]
-    result = result + str
-    const val = values[i]
-    if (val) result = result + stringifyVal(val, context)
+    result = result + strings[i]
+    if (i !== len - 1) {
+      const templOrBuf = values[i](context)
+      result = result + (
+        templOrBuf.isTemplate
+        ? stringify(templOrBuf, context)
+        : templOrBuf
+      )
+    }
     i++
   }
   return result
-}
-
-function stringifyVal (val, context) {
-  // val is a function returning template or buffer/string
-  const templOrBuf = val(context)
-  if (templOrBuf.isTemplate) return stringify(templOrBuf, context)
-  else return templOrBuf
 }
 
 function stringifyEach (val, context) {
