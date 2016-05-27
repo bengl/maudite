@@ -36,6 +36,13 @@ test(
 )
 
 test(
+  'at-sign as `this`',
+  m`foo ${'@'} baz`,
+  'bar',
+  'foo bar baz'
+)
+
+test(
   'two vars',
   m`foo ${c => c.bar} baz ${c => c.bux} buf`,
   {bar: 'bbaarr', bux: 'BUX'},

@@ -8,6 +8,7 @@ const Readable = require('stream').Readable
 // Roughly the same as https://www.npmjs.com/package/deep-access, except with a
 // faster loop and a shortcut for top level properties
 function access (obj, pty) {
+  if (pty === '@') return obj
   if (pty.indexOf('.') === -1 && pty[pty.length - 1] !== '?') return obj[pty]
   const chunks = pty.split('.')
   const len = chunks.length
