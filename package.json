@@ -1,6 +1,6 @@
 {
   "name": "maudite",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "streaming templates using template literals",
   "main": "index.js",
   "scripts": {
