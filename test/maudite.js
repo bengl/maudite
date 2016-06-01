@@ -1,9 +1,8 @@
-const testSuite = require('pitesti')()
-const m = require('./index')
+const m = require('../')
 const assert = require('assert')
 
-function test (desc, templ, context, expected) {
-  testSuite(desc, _ => {
+function t (desc, templ, context, expected) {
+  test(desc, _ => {
     return new Promise((resolve) => {
       var res = ''
       templ(context).on('data', d => { res += d.toString() }).on('end', _ => {
@@ -14,98 +13,98 @@ function test (desc, templ, context, expected) {
   })
 }
 
-test(
+t(
   'one var',
   m`foo ${c => c.bar} baz`,
   {bar: 'bbaarr'},
   'foo bbaarr baz'
 )
 
-test(
+t(
   'one var as property name',
   m`foo ${'bar'} baz`,
   {bar: 'bbaarr'},
   'foo bbaarr baz'
 )
 
-test(
+t(
   'one var as deep property name',
   m`foo ${'bar.bux'} baz`,
   {bar: {bux: 'bbaarr'}},
   'foo bbaarr baz'
 )
 
-test(
+t(
   'at-sign as `this`',
   m`foo ${'@'} baz`,
   'bar',
   'foo bar baz'
 )
 
-test(
+t(
   'two vars',
   m`foo ${c => c.bar} baz ${c => c.bux} buf`,
   {bar: 'bbaarr', bux: 'BUX'},
   'foo bbaarr baz BUX buf'
 )
 
-test(
+t(
   'nested',
   m`foo ${_ => m`bar ${c => c.baz} bux`} buf`,
   {baz: 'BAZ'},
   'foo bar BAZ bux buf'
 )
 
-test(
+t(
   'conditional string true',
   m`foo ${c => c.ok ? m`ok` : m`notok`} baz`,
   {ok: true},
   'foo ok baz'
 )
 
-test(
+t(
   'conditional string false',
   m`foo ${c => c.ok ? m`ok` : m`notok`} baz`,
   {ok: false},
   'foo notok baz'
 )
 
-test(
+t(
   'conditional nested true',
   m`foo ${c => c.ok ? m`ok ${c => c.bob}` : m`notok ${c => c.bob}`} baz`,
   {bob: 'BOB', ok: true},
   'foo ok BOB baz'
 )
 
-test(
+t(
   'conditional nested false',
   m`foo ${c => c.ok ? m`ok ${c => c.bob}` : m`notok ${c => c.bob}`} baz`,
   {bob: 'BOB', ok: false},
   'foo notok BOB baz'
 )
 
-test(
+t(
   'each',
   m`buy ${m.each('numbers', m`${c => c} chickens `)}today!`,
   {numbers: ['two', 'four', 'six']},
   'buy two chickens four chickens six chickens today!'
 )
 
-test(
+t(
   'deep each',
   m`buy ${m.each('foo.numbers', m`${c => c} chickens `)}today!`,
   {foo: {numbers: ['two', 'four', 'six']}},
   'buy two chickens four chickens six chickens today!'
 )
 
-test(
+t(
   'multi each',
   m`buy ${m.each('numbers', m`${c => c} chickens `)}and ${m.each('numbers', m`${c => c} cows `)}today!`,
   {numbers: ['two', 'four', 'six']},
   'buy two chickens four chickens six chickens and two cows four cows six cows today!'
 )
 
-testSuite`string rather than stream`(_ => {
+test`string rather than stream`(_ => {
   const templ = m`buy ${m.each('numbers', m`${c => c} chickens `)}and ${m.each('numbers', m`${c => c} cows `)}today!`
   const context = {numbers: ['two', 'four', 'six']}
   const result = templ.asString(context)
@@ -114,5 +113,3 @@ testSuite`string rather than stream`(_ => {
     'buy two chickens four chickens six chickens and two cows four cows six cows today!'
   )
 })
-
-testSuite()

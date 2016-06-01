@@ -85,6 +85,22 @@ console.log(template.asString('World'));
 // Hello, World!
 ```
 
+### Using with Express
+
+You can use `maudite` with [`express`][] as a template rendering engine. The
+template files must be normal JavaScript files and export `maudite` templates.
+
+```js
+const app = require('express')()
+app.engine('maudite')
+
+app.get('/', (req, res) => {
+  res.render('index', {foo: 'bar'}) // assumes a `index.maudite` file exists
+})
+
+app.listen(process.env.PORT || 3000)
+```
+
 ## License
 
 See LICENSE.txt
